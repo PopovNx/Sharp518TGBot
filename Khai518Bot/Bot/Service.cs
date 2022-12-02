@@ -25,7 +25,7 @@ public class Service
     private static string BoldUnderlineIf(string t, bool c) => BoldIf(UnderlineIf(t, c), c);
 
     public static DateTime TimeInUkraine =>
-        DateTime.UtcNow.AddHours(2) - TimeSpan.FromHours(8) - TimeSpan.FromMinutes(13);
+        DateTime.UtcNow.AddHours(2);
 
     public static int TodayShowId
     {
