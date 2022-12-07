@@ -56,8 +56,7 @@ public class CommandFactory : ICommandFactory
         {
             var instance = Activator.CreateInstance(type);
             if (instance is not Command command) continue;
-            command.Update = update;
-            command.BotClient = _botClient;
+            command.Init(_botClient, update);
             _logger.LogInformation("Command {TypeName} invoked", type.Name);
             yield return command;
         }

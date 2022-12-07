@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Khai518Bot.Bot.Commands.Entity;
 using Khai518Bot.Models;
+using Khai518Bot.Time;
 using Microsoft.EntityFrameworkCore;
 using Telegram.Bot.Types.ReplyMarkups;
 
@@ -9,35 +10,59 @@ namespace Khai518Bot.Bot;
 public class Service
 {
     private readonly BotDbContext _db;
+    private readonly ITimeProvider _timeProvider;
 
-    public Service(BotDbContext dbContext) => _db = dbContext;
+    public Service(BotDbContext dbContext, ITimeProvider timeProvider)
+    {
+        _db = dbContext;
+        _timeProvider = timeProvider;
+    }
 
-    private async Task<Day> GetDay(int dayId) => await _db.Days
+    public async Task<Day> GetDay(int dayId) => await _db.Days
         .Include(x => x.LecturePairs)
         .ThenInclude(x => x.MainLecture)
         .Include(x => x.LecturePairs)
         .ThenInclude(x => x.SubLecture).FirstAsync(x => x.Id == dayId);
 
-    private static bool IsDenominator => TimeInUkraine.DayOfYear / 7 % 2 == 0;
-    private static string BoldIf(string text, bool condition) => condition ? $"<b>{text}</b>" : text;
-    private static string UnderlineIf(string text, bool condition) => condition ? $"<u>{text}</u>" : text;
-    private static string Bold(string text) => BoldIf(text, true);
-    private static string BoldUnderlineIf(string t, bool c) => BoldIf(UnderlineIf(t, c), c);
+    public static readonly DateTime StartDate = new(2022, 9, 12);
+    public bool IsDenominator => ((_timeProvider.Ukraine - StartDate).Days / 7) % 2 != 0;
 
-    public static DateTime TimeInUkraine =>
-        DateTime.UtcNow.AddHours(2);
-
-    public static int TodayShowId
+    private int TodayId
     {
         get
         {
-            var dayId = (int)TimeInUkraine.DayOfWeek;
+            var dayId = (int)_timeProvider.Ukraine.DayOfWeek;
             if (dayId == 0) dayId = 7;
+            return dayId;
+        }
+    }
+
+    public int TodayShowId
+    {
+        get
+        {
+            var dayId = TodayId;
             if (dayId > 5) dayId = 1;
             return dayId;
         }
     }
 
+    public bool IsDenominatorShow
+    {
+        get
+        {
+            var dayId = TodayId;
+            return dayId > 5 ^ IsDenominator;
+        }
+    }
+
+    private static string BoldIf(string text, bool condition) => condition ? $"<b>{text}</b>" : text;
+    private static string UnderlineIf(string text, bool condition) => condition ? $"<u>{text}</u>" : text;
+    private static string Bold(string text) => BoldIf(text, true);
+    private static string BoldUnderlineIf(string t, bool c) => BoldIf(UnderlineIf(t, c), c);
+
+
+    public string TimeStr => _timeProvider.Ukraine.ToString("HH:mm");
 
     public async Task<string> GetOneDayText(int dayId)
     {
@@ -45,7 +70,7 @@ public class Service
         var text = new StringBuilder();
         var lectureNow = await GetLectureOnTime();
         var lectureIn5Min = await GetLessonIn5Minutes();
-        var denominatorText = IsDenominator ? @"Знам" : @"Чис";
+        var denominatorText = IsDenominatorShow ? @"Знам" : @"Чис";
         text.AppendLine($"Расписание на {Bold(day.Name)} ({denominatorText})\n");
 
         for (var i = 0; i < day.LecturePairs.Count; i++)
@@ -68,19 +93,19 @@ public class Service
                     break;
                 case LecturePair.State.OneNominator:
                     text.AppendLine(
-                        $"> Ч:  {BoldUnderlineIf(main.Title ?? @"Нет подписи", !IsDenominator)} {isMainNow}");
-                    text.AppendLine($"> З:  {BoldUnderlineIf(@"Нет пары", IsDenominator)} {isMainNow}");
+                        $"> Ч:  {BoldUnderlineIf(main.Title ?? @"Нет подписи", !IsDenominatorShow)} {isMainNow}");
+                    text.AppendLine($"> З:  {BoldUnderlineIf(@"Нет пары", IsDenominatorShow)} {isMainNow}");
                     break;
                 case LecturePair.State.OneDenominator:
-                    text.AppendLine($"> Ч:  {BoldUnderlineIf(@"Нет пары", !IsDenominator)} {isMainNow}");
+                    text.AppendLine($"> Ч:  {BoldUnderlineIf(@"Нет пары", !IsDenominatorShow)} {isMainNow}");
                     text.AppendLine(
-                        $"> З:  {BoldUnderlineIf(main.Title ?? @"Нет подписи", IsDenominator)} {isMainNow}");
+                        $"> З:  {BoldUnderlineIf(main.Title ?? @"Нет подписи", IsDenominatorShow)} {isMainNow}");
                     break;
                 case LecturePair.State.Two:
                     text.AppendLine(
-                        $"> Ч:  {BoldUnderlineIf(main.Title ?? @"Нет подписи", !IsDenominator)} {isMainNow}");
+                        $"> Ч:  {BoldUnderlineIf(main.Title ?? @"Нет подписи", !IsDenominatorShow)} {isMainNow}");
                     text.AppendLine(
-                        $"> З:  {BoldUnderlineIf(sub.Title ?? @"Нет подписи", IsDenominator)} {isSubNow}");
+                        $"> З:  {BoldUnderlineIf(sub.Title ?? @"Нет подписи", IsDenominatorShow)} {isSubNow}");
                     break;
                 default:
                     throw new ArgumentOutOfRangeException();
@@ -114,10 +139,10 @@ public class Service
 
     private async Task<Lecture?> GetLectureOnTime(DateTime? time = null)
     {
-        time ??= TimeInUkraine;
+        time ??= _timeProvider.Ukraine;
         if (time.Value.DayOfWeek is DayOfWeek.Saturday or DayOfWeek.Sunday)
             return null;
-        var isDenominator = time.Value.DayOfYear / 7 % 2 == 0;
+        var isDenominator = IsDenominatorShow;
         var day = await GetDay((int)time.Value.DayOfWeek);
         var onlyTime = time.Value.TimeOfDay;
         var lesson = day.LecturePairs.FirstOrDefault(x => x.TimeStart <= onlyTime && x.TimeEnd >= onlyTime);
@@ -350,9 +375,9 @@ public class Service
 
     public async Task<Lecture?> GetLessonIn5Minutes()
     {
-        var lecture = await GetLectureOnTime(TimeInUkraine);
+        var lecture = await GetLectureOnTime(_timeProvider.Ukraine);
         if (lecture is not null) return null;
-        var lectureIn = await GetLectureOnTime(TimeInUkraine.AddMinutes(5));
+        var lectureIn = await GetLectureOnTime(_timeProvider.Ukraine.AddMinutes(5));
         return lectureIn;
     }
 

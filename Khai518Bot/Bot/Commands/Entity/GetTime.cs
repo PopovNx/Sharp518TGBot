@@ -6,7 +6,6 @@ public class GetTime : Command
 {
     public override async Task Execute(Service service)
     {
-        var time = Service.TimeInUkraine.ToString("HH:mm:ss");
-        await BotClient.SendTextMessageAsync(Message.Chat, time);
+        await BotClient.SendTextMessageAsync(Message.Chat, service.TimeStr);
     }
 }

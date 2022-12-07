@@ -9,7 +9,6 @@ public sealed class BotDbContext : DbContext
     {
         Database.EnsureCreated();
         if (Days.Any()) return;
-
         Days.Add(Day.CreateInit(1, @"Понедельник"));
         Days.Add(Day.CreateInit(2, @"Вторник"));
         Days.Add(Day.CreateInit(3, @"Среда"));
