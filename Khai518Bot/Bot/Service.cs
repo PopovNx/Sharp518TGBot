@@ -3,9 +3,7 @@ using Khai518Bot.Bot.Commands.Entity;
 using Khai518Bot.Models;
 using Khai518Bot.Time;
 using Microsoft.EntityFrameworkCore;
-using System.Text.Json;
 using Telegram.Bot.Types.ReplyMarkups;
-using System.Text.RegularExpressions;
 
 namespace Khai518Bot.Bot;
 
@@ -13,13 +11,11 @@ public class Service
 {
     private readonly BotDbContext _db;
     private readonly ITimeProvider _timeProvider;
-    private List<Repository> _repositories;
 
     public Service(BotDbContext dbContext, ITimeProvider timeProvider)
     {
         _db = dbContext;
         _timeProvider = timeProvider;
-        ReadReposLinksFromJS0N();
     }
 
     public async Task<Day> GetDay(int dayId) => await _db.Days
@@ -174,29 +170,29 @@ public class Service
             switch (lesson.TypeState)
             {
                 case LecturePair.State.One:
-                    {
-                        var lec = lesson.MainLecture ?? lesson.SubLecture!;
-                        keyboardRaw[0]
-                            .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}",
-                                $"{OpenLessonQuery.QueryName}:{lec.Id}"));
-                        break;
-                    }
+                {
+                    var lec = lesson.MainLecture ?? lesson.SubLecture!;
+                    keyboardRaw[0]
+                        .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}",
+                            $"{OpenLessonQuery.QueryName}:{lec.Id}"));
+                    break;
+                }
                 case LecturePair.State.OneNominator:
-                    {
-                        var lec = lesson.MainLecture ?? lesson.SubLecture!;
-                        keyboardRaw[0]
-                            .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
-                                $"{OpenLessonQuery.QueryName}:{lec.Id}"));
-                        break;
-                    }
+                {
+                    var lec = lesson.MainLecture ?? lesson.SubLecture!;
+                    keyboardRaw[0]
+                        .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
+                            $"{OpenLessonQuery.QueryName}:{lec.Id}"));
+                    break;
+                }
                 case LecturePair.State.OneDenominator:
-                    {
-                        var lec = lesson.MainLecture ?? lesson.SubLecture!;
-                        keyboardRaw[0]
-                            .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
-                                $"{OpenLessonQuery.QueryName}:{lec.Id}"));
-                        break;
-                    }
+                {
+                    var lec = lesson.MainLecture ?? lesson.SubLecture!;
+                    keyboardRaw[0]
+                        .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
+                            $"{OpenLessonQuery.QueryName}:{lec.Id}"));
+                    break;
+                }
                 case LecturePair.State.Two:
 
                     keyboardRaw[0]
@@ -281,31 +277,31 @@ public class Service
             switch (lesson.TypeState)
             {
                 case LecturePair.State.One:
-                    {
-                        buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}",
-                            $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
-                        break;
-                    }
+                {
+                    buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}",
+                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
+                    break;
+                }
                 case LecturePair.State.OneNominator:
-                    {
-                        buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
-                            $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
-                        break;
-                    }
+                {
+                    buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
+                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
+                    break;
+                }
                 case LecturePair.State.OneDenominator:
-                    {
-                        buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
-                            $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
-                        break;
-                    }
+                {
+                    buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
+                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
+                    break;
+                }
                 case LecturePair.State.Two:
-                    {
-                        buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
-                            $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}:0"));
-                        buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
-                            $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}:1"));
-                        break;
-                    }
+                {
+                    buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
+                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}:0"));
+                    buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
+                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}:1"));
+                    break;
+                }
             }
 
             keyboardRaw.Add(buttons);
@@ -383,88 +379,6 @@ public class Service
         if (lecture is not null) return null;
         var lectureIn = await GetLectureOnTime(_timeProvider.Ukraine.AddMinutes(5));
         return lectureIn;
-    }
-
-    private async Task ReadReposLinksFromJS0N()
-    {
-        using (var file = new StreamReader("ReposLinks.json"))
-        {
-            foreach (var usr in JsonSerializer.Deserialize < List<Dictionary<string, string>>(file.ReadToEnd()))
-            {
-                await _repositories.Append(new Repository.CreateInit(usr.Name, usr.Link, usr.Role));
-            }
-        }
-    }
-
-    public Task<string> AddLink(string msg)
-    {
-        string name;
-        string link;
-        string role = string.Empty;
-
-        var lst = msg.Split(" ");
-        if (lst.Length == 3)
-        {
-            name = lst[1];
-            link = lst[2];
-        }
-        else if (lst.Length == 4)
-        {
-            role = lst[1];
-            name = lst[2];
-            link = lst[3];
-        }
-        else
-        {
-            return "Неверное количество аргументов";
-        }
-        if (!_repositories.Any(p => p.Name == name))
-        {
-            if (Regex.IsMatch(link, @"\bhttps?://\S+\b"))
-                return "Неверный формат ссылки";
-            await _repositories.Append(new Repository.CreateInit(name, link, role));
-            SetReposJSON();
-            return $"Добавлен {name}";
-        }
-        else
-        {
-            return "Имя уже зарегестрировано";
-        }
-    }
-
-    public Task<string> SetReposJSON()
-    {
-        using (var file = StreamWriter("ReposLinks.json"))
-        {
-            await file.Write(JsonSerializer.Serialize(_repositories));
-        }
-    }
-
-    public Task<string> RemoveLink(string msg)
-    {
-        var lst = msg.Split(" ");
-        var name = msg[1];
-        if (lst.Length == 2)
-            return "Неверное количество аргументов";
-        for (int i=0; i<lst.Length; i++)
-        {
-            if (_repositories[i].Name == name)
-            {
-                await _repositories.RemoveAt(i);
-                SetReposJSON();
-                return $"Удален {name}";
-            }
-        }
-    }
-
-    public string GetReposLinks()
-    {
-        var text = "";
-        foreach (var usr in _repositories)
-        {
-            text += $"{usr.Role} <b>{usr.Name}</b> - <a href='{usr.Link}'>GitHub</a>\n";
-        }
-        return text;
     }
 
     public async Task<bool> RegisterChat(long chatId)
