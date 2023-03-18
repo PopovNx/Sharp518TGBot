@@ -1,4 +1,7 @@
 ﻿using System.Reflection;
+using System.Text.RegularExpressions;
+using Khai518Bot.Bot.Commands.Attributes;
+using Khai518Bot.Bot.Commands.Entity;
 using Telegram.Bot.Types.Enums;
 
 namespace Khai518Bot.Bot.Commands;
@@ -31,23 +34,34 @@ public class CommandFactory : ICommandFactory
                 _logger.LogWarning("Command {Command} has no attribute", type.Name);
                 continue;
             }
-
+            
             _commands.Add(attribute, type);
         }
+
+        var textCommands = _commands.Select(x => x.Key).Where(x => x is TextCommandAttribute)
+            .Cast<TextCommandAttribute>();
+        var botCommands = textCommands.Select(attribute => new BotCommand
+            { Command = attribute.Command, Description = attribute.Description }).ToList();
+        foreach (var botCommand in botCommands)
+        {
+            _logger.LogInformation("Command {Command} added", botCommand.Command);
+        }
+
+        _botClient.SetMyCommandsAsync(botCommands);
     }
 
     private static bool ShouldBeInvoked(CommandAttribute attribute, Update update)
     {
-        if (attribute.UpdateType != update.Type)
-            return false;
-        if (attribute.UpdateType != UpdateType.Message && attribute.UpdateType != UpdateType.CallbackQuery)
-            return true;
-        if (!attribute.HasCommand)
-            return true;
-        if (!string.IsNullOrEmpty(update.Message?.Text) && update.Message.Text.StartsWith($"/{attribute.Command}"))
-            return true;
-        return !string.IsNullOrEmpty(update.CallbackQuery?.Data) &&
-               update.CallbackQuery.Data.StartsWith($"{attribute.Command}");
+        switch (attribute)
+        {
+            case TextCommandAttribute textCommand when update.Type == UpdateType.Message:
+                return update.Message?.Text?.StartsWith($"/{textCommand.Command}") ?? false;
+            
+            case QueryCommandAttribute queryCommand when update.Type == UpdateType.CallbackQuery:
+                var patten = new Regex(queryCommand.Pattern);
+                return patten.IsMatch(update.CallbackQuery?.Data ?? string.Empty);
+        }
+        return false;
     }
 
     public IEnumerable<Command> CreateCommands(Update update)
@@ -57,7 +71,8 @@ public class CommandFactory : ICommandFactory
             var instance = Activator.CreateInstance(type);
             if (instance is not Command command) continue;
             command.Init(_botClient, update);
-            _logger.LogInformation("Command {TypeName} invoked", type.Name);
+            _logger.LogInformation("Command {TypeName} invoked with {UpdateType} by {User}",
+                type.Name, update.Type, update.Message?.From?.Username ?? update.CallbackQuery?.From?.Username);
             yield return command;
         }
     }

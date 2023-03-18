@@ -1,7 +1,8 @@
-﻿namespace Khai518Bot.Bot.Commands.Entity;
+﻿using Khai518Bot.Bot.Commands.Attributes;
 
-[UsedImplicitly]
-[Command(@"setvalue")]
+namespace Khai518Bot.Bot.Commands.Entity.Text;
+
+[TextCommand(@"setvalue", @"Установить значение")]
 public class SetValue : Command
 {
     public override async Task Execute(Service service)

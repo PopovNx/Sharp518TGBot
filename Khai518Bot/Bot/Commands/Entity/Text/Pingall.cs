@@ -1,12 +1,9 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Threading;
-using Telegram.Bot.Types;
+﻿using Khai518Bot.Bot.Commands.Attributes;
 using Telegram.Bot.Types.Enums;
 
-namespace Khai518Bot.Bot.Commands.Entity;
+namespace Khai518Bot.Bot.Commands.Entity.Text;
 
-[UsedImplicitly]
-[Command(@"ping_all")]
+[TextCommand(@"pingall", @"Пингануть всех в чате")]
 
 public class PingAll : Command
 {

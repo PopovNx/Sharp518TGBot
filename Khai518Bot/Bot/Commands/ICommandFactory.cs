@@ -1,4 +1,6 @@
-﻿namespace Khai518Bot.Bot.Commands;
+﻿using Khai518Bot.Bot.Commands.Entity;
+
+namespace Khai518Bot.Bot.Commands;
 
 public interface ICommandFactory
 {

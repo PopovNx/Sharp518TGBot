@@ -1,7 +1,8 @@
-﻿namespace Khai518Bot.Bot.Commands.Entity;
+﻿using Khai518Bot.Bot.Commands.Attributes;
 
-[UsedImplicitly]
-[Command(@"gettime")]
+namespace Khai518Bot.Bot.Commands.Entity.Text;
+
+[TextCommand(@"time", @"Показать серверное время")]
 public class GetTime : Command
 {
     public override async Task Execute(Service service)

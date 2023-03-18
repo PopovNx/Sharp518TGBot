@@ -1,9 +1,9 @@
-﻿using Telegram.Bot.Types.Enums;
+﻿using Khai518Bot.Bot.Commands.Attributes;
+using Telegram.Bot.Types.Enums;
 
-namespace Khai518Bot.Bot.Commands.Entity;
+namespace Khai518Bot.Bot.Commands.Entity.Text;
 
-[UsedImplicitly]
-[Command(@"getweek")]
+[TextCommand(@"getweek", @"Получить расписание на неделю")]
 public class GetWeek : Command
 {
     public override async Task Execute(Service service)

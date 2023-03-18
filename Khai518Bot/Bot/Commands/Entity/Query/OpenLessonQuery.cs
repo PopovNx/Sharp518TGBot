@@ -1,12 +1,13 @@
-﻿using Telegram.Bot.Types.Enums;
+﻿using Khai518Bot.Bot.Commands.Attributes;
 
-namespace Khai518Bot.Bot.Commands.Entity;
+namespace Khai518Bot.Bot.Commands.Entity.Query;
 
 [UsedImplicitly]
-[Command(UpdateType.CallbackQuery, QueryName)]
+[QueryCommand(@$"{QueryName}:(\d+)")]
 public class OpenLessonQuery : Command
 {
-    public const string QueryName = "openlesson";
+    private const string QueryName = "openlesson";
+    public static string Generate(int lessonId) => $"{QueryName}:{lessonId}";
 
     public override async Task Execute(Service service)
     {

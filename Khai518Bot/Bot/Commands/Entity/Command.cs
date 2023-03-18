@@ -1,7 +1,7 @@
 ﻿using Telegram.Bot.Types.Enums;
 using Telegram.Bot.Types.ReplyMarkups;
 
-namespace Khai518Bot.Bot.Commands;
+namespace Khai518Bot.Bot.Commands.Entity;
 
 public abstract class Command
 {

@@ -1,9 +1,9 @@
-﻿using Telegram.Bot.Types.Enums;
+﻿using Khai518Bot.Bot.Commands.Attributes;
+using Telegram.Bot.Types.Enums;
 
-namespace Khai518Bot.Bot.Commands.Entity;
+namespace Khai518Bot.Bot.Commands.Entity.Text;
 
-[UsedImplicitly]
-[Command(@"getrosp")]
+[TextCommand(@"getrosp", @"Получить расписание на сегодня")]
 public class GetRosp : Command
 {
     public override async Task Execute(Service service)

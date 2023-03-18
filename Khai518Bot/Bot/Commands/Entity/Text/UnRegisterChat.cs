@@ -1,7 +1,9 @@
-﻿namespace Khai518Bot.Bot.Commands.Entity;
+﻿using Khai518Bot.Bot.Commands.Attributes;
+
+namespace Khai518Bot.Bot.Commands.Entity.Text;
 
 [UsedImplicitly]
-[Command(@"unregisterchat")]
+[TextCommand(@"unregister", @"Отписаться от рассылки")]
 public class UnRegisterChat : Command
 {
     public override async Task Execute(Service service)

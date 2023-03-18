@@ -1,7 +1,8 @@
-﻿namespace Khai518Bot.Bot.Commands.Entity;
+﻿using Khai518Bot.Bot.Commands.Attributes;
 
-[UsedImplicitly]
-[Command(@"registerchat")]
+namespace Khai518Bot.Bot.Commands.Entity.Text;
+
+[TextCommand(@"register", @"Зарегистрировать чат для получения уведомлений")]
 public class RegisterChat : Command
 {
     public override async Task Execute(Service service)

@@ -1,5 +1,6 @@
 ﻿using System.Text;
 using Khai518Bot.Bot.Commands.Entity;
+using Khai518Bot.Bot.Commands.Entity.Query;
 using Khai518Bot.Models;
 using Khai518Bot.Time;
 using Microsoft.EntityFrameworkCore;
@@ -18,7 +19,7 @@ public class Service
         _timeProvider = timeProvider;
     }
 
-    public async Task<Day> GetDay(int dayId) => await _db.Days
+    private async Task<Day> GetDay(int dayId) => await _db.Days
         .Include(x => x.LecturePairs)
         .ThenInclude(x => x.MainLecture)
         .Include(x => x.LecturePairs)
@@ -173,8 +174,7 @@ public class Service
                 {
                     var lec = lesson.MainLecture ?? lesson.SubLecture!;
                     keyboardRaw[0]
-                        .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}",
-                            $"{OpenLessonQuery.QueryName}:{lec.Id}"));
+                        .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}", OpenLessonQuery.Generate(lec.Id)));
                     break;
                 }
                 case LecturePair.State.OneNominator:
@@ -182,7 +182,7 @@ public class Service
                     var lec = lesson.MainLecture ?? lesson.SubLecture!;
                     keyboardRaw[0]
                         .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
-                            $"{OpenLessonQuery.QueryName}:{lec.Id}"));
+                            OpenLessonQuery.Generate(lec.Id)));
                     break;
                 }
                 case LecturePair.State.OneDenominator:
@@ -190,18 +190,17 @@ public class Service
                     var lec = lesson.MainLecture ?? lesson.SubLecture!;
                     keyboardRaw[0]
                         .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
-                            $"{OpenLessonQuery.QueryName}:{lec.Id}"));
+                            OpenLessonQuery.Generate(lec.Id)));
                     break;
                 }
                 case LecturePair.State.Two:
 
                     keyboardRaw[0]
                         .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
-                            $"{OpenLessonQuery.QueryName}:{lesson.MainLecture?.Id}"));
+                            OpenLessonQuery.Generate(lesson.MainLecture?.Id ?? 0)));
                     keyboardRaw[0]
                         .Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
-                            $"{OpenLessonQuery.QueryName}:{lesson.SubLecture?.Id}"));
-
+                            OpenLessonQuery.Generate(lesson.SubLecture?.Id ?? 0)));
                     break;
                 case LecturePair.State.None:
                 default:
@@ -211,7 +210,7 @@ public class Service
 
         keyboardRaw.Add(new List<InlineKeyboardButton>
         {
-            InlineKeyboardButton.WithCallbackData(@"Назад", $"{GetWeekQuery.QueryName}:{dayId}")
+            InlineKeyboardButton.WithCallbackData(@"Назад", GetWeekQuery.Generate(dayId))
         });
         return new InlineKeyboardMarkup(keyboardRaw);
     }
@@ -221,7 +220,7 @@ public class Service
         var days = await _db.Days.ToListAsync();
         var keyboardRaw = new InlineKeyboardButton[days.Count + 1][];
         keyboardRaw[0] = new[]
-            { InlineKeyboardButton.WithCallbackData(@"Подробнее", $"{GetRospQuery.QueryName}:{dayId}") };
+            { InlineKeyboardButton.WithCallbackData(@"Подробнее", GetRospQuery.Generate(dayId)) };
         for (var i = 0; i < days.Count; i++)
         {
             var day = days[i];
@@ -229,8 +228,7 @@ public class Service
             var today = day.Id == TodayShowId ? "📅" : "";
             keyboardRaw[i + 1] = new[]
             {
-                InlineKeyboardButton.WithCallbackData($"{selected} {day.Name} {today}",
-                    $"{GetWeekQuery.QueryName}:{day.Id}")
+                InlineKeyboardButton.WithCallbackData($"{selected} {day.Name} {today}", GetWeekQuery.Generate(day.Id))
             };
         }
 
@@ -244,7 +242,7 @@ public class Service
             x.LecturePairs.Any(y => y.MainLecture == lesson || y.SubLecture == lesson));
         var keyboardRaw = new List<List<InlineKeyboardButton>>
         {
-            new() { InlineKeyboardButton.WithCallbackData(@"Назад", $"{GetRospQuery.QueryName}:{day?.Id}") }
+            new() { InlineKeyboardButton.WithCallbackData(@"Назад", GetRospQuery.Generate(day?.Id ?? 0)) }
         };
         return new InlineKeyboardMarkup(keyboardRaw);
     }
@@ -272,34 +270,35 @@ public class Service
                 LecturePair.State.Two => "Две",
                 _ => throw new ArgumentOutOfRangeException()
             };
+
             buttons.Add(InlineKeyboardButton.WithCallbackData($@"{modeText}",
-                $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.LessonPairMode}:{dayId}:{lesson.Id}"));
+                EditDayQuery.Generate(EditDayQuery.EditQueryType.LessonPairMode, dayId, lesson.Id)));
             switch (lesson.TypeState)
             {
                 case LecturePair.State.One:
                 {
                     buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}",
-                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
+                        EditDayQuery.Generate(EditDayQuery.EditQueryType.OpenLessonEditor, dayId, lesson.Id)));
                     break;
                 }
                 case LecturePair.State.OneNominator:
                 {
                     buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
-                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
+                        EditDayQuery.Generate(EditDayQuery.EditQueryType.OpenLessonEditor, dayId, lesson.Id)));
                     break;
                 }
                 case LecturePair.State.OneDenominator:
                 {
                     buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
-                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}"));
+                        EditDayQuery.Generate(EditDayQuery.EditQueryType.OpenLessonEditor, dayId, lesson.Id)));
                     break;
                 }
                 case LecturePair.State.Two:
                 {
                     buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. Ч",
-                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}:0"));
+                        EditDayQuery.Generate(EditDayQuery.EditQueryType.OpenLessonEditor, dayId, lesson.Id)));
                     buttons.Add(InlineKeyboardButton.WithCallbackData($@"{i + 1}. З",
-                        $"{EditDayQuery.QueryName}:{(int)EditDayQuery.EditQueryType.OpenLessonEditor}:{dayId}:{lesson.Id}:1"));
+                        EditDayQuery.Generate(EditDayQuery.EditQueryType.OpenLessonEditor, dayId, lesson.Id)));
                     break;
                 }
             }

@@ -1,9 +1,9 @@
-﻿using Telegram.Bot.Types.Enums;
+﻿using Khai518Bot.Bot.Commands.Attributes;
+using Telegram.Bot.Types.Enums;
 
-namespace Khai518Bot.Bot.Commands.Entity;
+namespace Khai518Bot.Bot.Commands.Entity.Text;
 
-[UsedImplicitly]
-[Command(@"editday")]
+[TextCommand(@"editday", @"Редактировать день")]
 public class EditDay : Command
 {
     public override async Task Execute(Service service)

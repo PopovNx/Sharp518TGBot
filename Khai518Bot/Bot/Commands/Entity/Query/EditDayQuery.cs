@@ -1,18 +1,21 @@
-﻿using Telegram.Bot.Types.Enums;
+﻿using Khai518Bot.Bot.Commands.Attributes;
 
-namespace Khai518Bot.Bot.Commands.Entity;
+namespace Khai518Bot.Bot.Commands.Entity.Query;
 
-[UsedImplicitly]
-[Command(UpdateType.CallbackQuery, QueryName)]
+[QueryCommand(@$"{QueryName}:(\d+):(\d+):(\d+)(:(\d+))?")]
 public class EditDayQuery : Command
 {
-    public const string QueryName = "editlessonday";
+    private const string QueryName = "editlessonday";
 
     public enum EditQueryType
     {
         LessonPairMode,
         OpenLessonEditor
     }
+
+    public static string Generate(EditQueryType type, int dayId, int lessonId, int pairId = 0)
+        => $"{QueryName}:{(int)type}:{dayId}:{lessonId}:{pairId}";
+
 
     public override async Task Execute(Service service)
     {

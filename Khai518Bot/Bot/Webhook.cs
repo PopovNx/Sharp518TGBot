@@ -1,4 +1,5 @@
-﻿using Khai518Bot.Bot.Settings;
+﻿using Khai518Bot.Bot.Commands;
+using Khai518Bot.Bot.Settings;
 
 namespace Khai518Bot.Bot;
 
@@ -8,7 +9,7 @@ public class Webhook : IHostedService
     private readonly IBotSettings _settings;
     private readonly ITelegramBotClient _client;
 
-    public Webhook(ILogger<Webhook> logger, IBotSettings settings, ITelegramBotClient client)
+    public Webhook(ILogger<Webhook> logger, IBotSettings settings, ITelegramBotClient client,ICommandFactory commandFactory)
     {
         _logger = logger;
         _settings = settings;

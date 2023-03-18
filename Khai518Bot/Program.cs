@@ -1,4 +1,5 @@
 using Khai518Bot.Bot.Commands;
+using Khai518Bot.Bot.Commands.Entity;
 using Khai518Bot.Bot.Handler;
 using Khai518Bot.Bot.Settings;
 using Khai518Bot.Time;
