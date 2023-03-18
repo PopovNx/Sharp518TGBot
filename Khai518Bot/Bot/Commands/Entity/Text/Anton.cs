@@ -1,11 +1,9 @@
-using System.Threading;
-using Telegram.Bot.Types;
+using Khai518Bot.Bot.Commands.Attributes;
 using Telegram.Bot.Types.Enums;
 
-namespace Khai518Bot.Bot.Commands.Entity
+namespace Khai518Bot.Bot.Commands.Entity.Text
 {
-    [UsedImplicitly]
-    [Command(@"anton")]
+    [TextCommand(@"anton", @"Информация об антоне")]
     public class Anton : Command
     {
         public override async Task Execute(Service service)
