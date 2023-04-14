@@ -47,7 +47,7 @@ public class LessonsListen : IHostedService
             foreach (var chat in chats)
             {
                 var toPing = await ToPing(chat.ChatId);
-                await _client.SendTextMessageAsync(chat.ChatId, $"Через 5 минут урок: {lesson.Title}!{toPing}",
+                await _client.SendTextMessageAsync(chat.ChatId, $"Через 5 минут урок: {lesson.Title}!{toPing}\nСсылка: {lesson.Link}",
                     cancellationToken: cancellationToken, parseMode: ParseMode.Markdown);
             }
 
