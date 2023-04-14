@@ -17,10 +17,11 @@ builder.Services.AddSingleton<ITelegramBotClient>(
     e => new TelegramBotClient(e.GetRequiredService<IBotSettings>().Token));
 builder.Services.AddSingleton<ICommandFactory, CommandFactory>();
 builder.Services.AddScoped<IBotHandler, BotHandler>();
+
+builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddSingleton<Service>();
 builder.Services.AddHostedService<Webhook>();
 builder.Services.AddHostedService<LessonsListen>();
-builder.Services.AddControllers().AddNewtonsoftJson();
 builder.Services.AddEndpointsApiExplorer();
 var app = builder.Build();
 app.MapControllers();

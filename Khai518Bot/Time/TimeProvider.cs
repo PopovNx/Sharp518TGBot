@@ -2,5 +2,5 @@
 
 public class TimeProvider : ITimeProvider
 {
-    public DateTime Ukraine => DateTime.UtcNow.AddHours(2);
+    public DateTime Ukraine => DateTime.UtcNow.AddHours(3);
 }

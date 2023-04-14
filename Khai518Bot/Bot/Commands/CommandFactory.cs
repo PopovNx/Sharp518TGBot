@@ -40,7 +40,9 @@ public class CommandFactory : ICommandFactory
 
         var textCommands = _commands.Select(x => x.Key).Where(x => x is TextCommandAttribute)
             .Cast<TextCommandAttribute>();
-        var botCommands = textCommands.Select(attribute => new BotCommand
+        var botCommands = textCommands
+            .OrderBy(x=>x.Priority)
+            .Select(attribute => new BotCommand
             { Command = attribute.Command, Description = attribute.Description }).ToList();
         foreach (var botCommand in botCommands)
         {
@@ -71,8 +73,9 @@ public class CommandFactory : ICommandFactory
             var instance = Activator.CreateInstance(type);
             if (instance is not Command command) continue;
             command.Init(_botClient, update);
-            _logger.LogInformation("Command {TypeName} invoked with {UpdateType} by {User}",
-                type.Name, update.Type, update.Message?.From?.Username ?? update.CallbackQuery?.From?.Username);
+            _logger.LogInformation("Command {TypeName} invoked with {UpdateType} by {User} while message is {Message}",
+                type.Name, update.Type, update.Message?.From?.Username ?? update.CallbackQuery?.From?.Username,
+                update.Message?.Text ?? update.CallbackQuery?.Data);
             yield return command;
         }
     }

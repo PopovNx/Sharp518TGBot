@@ -3,7 +3,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace Khai518Bot.Bot.Commands.Entity.Text;
 
-[TextCommand(@"pingall", @"Пингануть всех в чате")]
+[TextCommand(@"pingall", @"Пингануть всех в чате",-1)]
 
 public class PingAll : Command
 {

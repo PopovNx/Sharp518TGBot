@@ -3,7 +3,7 @@ using Telegram.Bot.Types.Enums;
 
 namespace Khai518Bot.Bot.Commands.Entity.Text
 {
-    [TextCommand(@"anton", @"Информация об антоне")]
+    [TextCommand(@"anton", @"Информация об антоне", 1)]
     public class Anton : Command
     {
         public override async Task Execute(Service service)

@@ -18,9 +18,10 @@ public class Webhook : IHostedService
 
     public async Task StartAsync(CancellationToken cancellationToken)
     {
-        _logger.LogInformation("Starting webhook");
+        _logger.LogInformation("Starting webhook with url {Url}", _settings.WebhookUrl);
         await _client.SetWebhookAsync($"{_settings.WebhookUrl}/{_settings.Token}", dropPendingUpdates: true,
             cancellationToken: cancellationToken);
+        _logger.LogInformation("Webhook started with url {Url}", _settings.WebhookUrl);
     }
 
     public async Task StopAsync(CancellationToken cancellationToken)
